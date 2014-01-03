@@ -3,16 +3,21 @@
         <span class="pink upper">{{username}}</span>/
         <span>My Gists</span>/
         <span>
+            <a href="" ng-click="refresh()">Refresh gists</a>
+        </span>/
+        <span>
             <a href="" ng-click="logout()">Log out</a>
         </span>
     </div>
+
+    <div class="alert alert-danger" ng-show="data.error" ng-bind="data.error"></div>
 
     <div class="gist-wrapper" ng-repeat="gist in data.gists">
         <h4>{{gist.description}}</h4>
         <gist id="gist.id" user="username" >
             <div ng-repeat="f in gist.files">
                 <gist-file-pane title="f.filename">
-                    <textarea class="editor" gist-content="" ng-model="f.content"></textarea>
+                    <textarea class="editor" gist-content="" ng-model="f.content" ng-blur="update(gist)"></textarea>
                 </gist-file-pane>
             </div>
         </gist>

@@ -1,6 +1,6 @@
 "use strict";
-angular.module('gist', ['ngRoute', 'user', 'gists'])
-    .config(['$routeProvider', '$httpProvider', function ($route, httpProvider) {
+angular.module('gist', ['ngRoute', 'user', 'gists', 'restangular'])
+    .config(['$routeProvider', '$httpProvider', 'RestangularProvider', function ($route, httpProvider, RestangularProvider) {
         $route.when('/', {
             templateUrl: 'app/login/login.tpl.html',
             controller: 'loginCtrl'
@@ -20,5 +20,7 @@ angular.module('gist', ['ngRoute', 'user', 'gists'])
 
         httpProvider.defaults.useXDomain = true;
         delete httpProvider.defaults.headers.common['X-Requested-With'];
+
+        RestangularProvider.setBaseUrl('https://api.github.com/');
 
     }]);

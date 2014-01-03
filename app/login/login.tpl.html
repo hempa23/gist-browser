@@ -7,9 +7,13 @@
         <div>
             <form role="form">
                 <div class="form-group">
-                    <input class="form-control" type="text" ng-model="credentials.id" placeholder="Git account name"/>
+                    <input class="form-control" type="text" ng-model="credentials.id" placeholder="username" ng-required="required"/>
                 </div>
-                <button class="btn btn-block" ng-click="auth()">Browse gists</button>
+                <div class="form-group">
+                    <input class="form-control" type="password" ng-model="credentials.sec" placeholder="password" ng-required="required"/>
+                </div>
+                <div class="alert alert-danger" ng-show="error" ng-bind="error"></div>
+                <button class="btn btn-block" ng-click="auth()">login</button>
             </form>
         </div>
     </div>
