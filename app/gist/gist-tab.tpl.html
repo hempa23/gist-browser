@@ -1,0 +1,9 @@
+<div class="tabbable">
+    <div class="tab-content" ng-transclude></div>
+    <ul class="nav nav-tabs">
+        <li ng-repeat="pane in panes" ng-class="{active:pane.selected}">
+            <a href="" ng-click="select(pane)">{{pane.title}}</a>
+        </li>
+        <li class="git-link"><a ng-href="https://gist.github.com/{{user}}/{{id}}">View in GitHub</a></li>
+    </ul>
+</div>

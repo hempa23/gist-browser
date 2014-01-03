@@ -1,0 +1,20 @@
+<div class=" col-sm-12">
+    <div class="user-info">
+        <span class="pink upper">{{username}}</span>/
+        <span>My Gists</span>/
+        <span>
+            <a href="" ng-click="logout()">Log out</a>
+        </span>
+    </div>
+
+    <div class="gist-wrapper" ng-repeat="gist in data.gists">
+        <h4>{{gist.description}}</h4>
+        <gist id="gist.id" user="username" >
+            <div ng-repeat="f in gist.files">
+                <gist-file-pane title="f.filename">
+                    <textarea class="editor" gist-content="" ng-model="f.content"></textarea>
+                </gist-file-pane>
+            </div>
+        </gist>
+    </div>
+</div>
