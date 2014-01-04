@@ -1,5 +1,5 @@
-<div class=" col-sm-12">
-    <div class="user-info">
+<div class="col-sm-12 col-md-12">
+    <div class="user-info col-sm-12 col-md-12">
         <span class="pink upper">{{username}}</span>/
         <span>My Gists</span>/
         <span>
@@ -10,9 +10,9 @@
         </span>
     </div>
 
-    <div class="alert alert-danger" ng-show="data.error" ng-bind="data.error"></div>
+    <div class="alert alert-danger col-sm-12 col-md-12" ng-show="data.error" ng-bind="data.error"></div>
 
-    <div class="gist-wrapper" ng-repeat="gist in data.gists">
+    <div class="gist-wrapper col-sm-12 col-md-12" ng-repeat="gist in data.gists">
         <h4>{{gist.description}}</h4>
         <gist id="gist.id" user="username" >
             <div ng-repeat="f in gist.files">
