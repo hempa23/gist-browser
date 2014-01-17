@@ -1,0 +1,11 @@
+{
+    "predef": [
+        "console",
+        "describe",
+        "it",
+        "after",
+        "afterEach",
+        "before",
+        "beforeEach"
+    ]
+}

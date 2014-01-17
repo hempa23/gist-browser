@@ -1,32 +1,36 @@
-"use strict";
-angular.module('user', []).
-    controller('loginCtrl', ['$scope', 'userService', '$location', function (scope, userService, l) {
+/*global angular:false */
+(function(angular) {
+    "use strict";
+angular.module('hesa.user', []).
+    controller('loginCtrl', ['$scope', 'userService', '$location', function (scope, userService, location) {
         scope.credentials = {};
 
         scope.auth = function() {
             scope.error = undefined;
+
             userService.login(scope.credentials).then(function(res) {
                 if(res) {
-                    l.path("/gists");
+                    location.path("/gists");
                 } else {
                     scope.error = "Wrong username and/or password";
                 }
             });
-        }
+        };
     }])
-    .factory('userService', ['$http', '$q', '$location', '$log', '$rootScope', function (http, q, loc, log, $root) {
+    .factory('userService', ['$http', '$q', '$location', '$log', '$rootScope', function (http, q, location, log, $root) {
         var authHeader;
         return {
             login: function (cred) {
-                var defer = q.defer();
-                var loginHeader = 'Basic ' + btoa(cred.id + ':' + cred.sec);
+                var defer = q.defer(),
+                    loginHeader = 'Basic ' + btoa(cred.id + ':' + cred.sec); //Encode
 
-                http({method: 'POST', url: 'https://api.github.com/user', data: JSON.stringify({}), headers : {
+                http({method: 'POST', url: 'https://api.github.com/user', data: {}, headers : {
                     'Authorization' : loginHeader,
                     'Content-Type' : 'application/json;charset=UTF-8'
                 }})
                 .success(function(data){
-                    $root.username = cred.id;
+                    $root.username = data.login;
+                    $root.fullname = data.name;
                     authHeader = {'Authorization' : loginHeader};
                     defer.resolve(true);
                 })
@@ -41,11 +45,12 @@ angular.module('user', []).
                 authHeader = undefined;
                 return true;
             },
-            hasGistRepo: function() {
-                return !authHeader;
+            userLoggedIn: function() {
+                return authHeader !== undefined;
             },
             getAuthHeader: function () {
                 return authHeader;
             }
-        }
+        };
     }]);
+})(angular);
