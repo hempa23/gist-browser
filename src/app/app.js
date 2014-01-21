@@ -12,9 +12,9 @@
                     templateUrl: 'gist/edit.tpl.html',
                     controller: 'gistCtrl',
                     resolve: {
-                        gists: ['gistService', 'userService', '$location', function (gistService, userService, location) {
+                        gists: ['gistService', 'userService', '$location', '$rootScope', function (gistService, userService, location, root) {
                             if (userService.userLoggedIn()) {
-                                return gistService.gists().then(function (gists) {
+                                return gistService.gists(root.username).then(function (gists) {
                                     return gists;
                                 });
                             } else {

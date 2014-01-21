@@ -29,12 +29,12 @@
         beforeEach(angular.mock.module("restangular"));
         beforeEach(angular.mock.module('hesa.gists'));
 
-        beforeEach(inject(function ($injector, _$httpBackend_, _$compile_, _$location_) {
+        beforeEach(inject(function ($injector) {
             scope = $injector.get('$rootScope').$new();
-            location =  _$location_;
+            location =  $injector.get('$location');
             uService = $injector.get('userService');
-            httpBackend = _$httpBackend_;
-            compile = _$compile_;
+            httpBackend = $injector.get('$httpBackend');
+            compile = $injector.get('$compile');
 
             gService = $injector.get('gistService');
             scope.gist = publicGist_1;

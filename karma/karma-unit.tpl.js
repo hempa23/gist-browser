@@ -39,7 +39,7 @@ module.exports = function ( karma ) {
             /**
             * Disable file watching by default.
             */
-            autoWatch: false,
+            autoWatch: true,
 
             /**
             * The list of browsers to launch to test on. This includes only "Firefox" by
