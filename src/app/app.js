@@ -14,7 +14,7 @@
                     resolve: {
                         gists: ['gistService', 'userService', '$location', '$rootScope', function (gistService, userService, location, root) {
                             if (userService.userLoggedIn()) {
-                                return gistService.gists(root.username).then(function (gists) {
+                                return gistService.gists(root.user.username).then(function (gists) {
                                     return gists;
                                 });
                             } else {

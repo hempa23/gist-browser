@@ -1,5 +1,6 @@
 /*global angular:false */
 
+
 (function () {
     "use strict";
 
@@ -11,15 +12,16 @@
             uService,
             location,
             gistIds = [
-                {"id": "081b084e13fd0318c097"},
-                {"id": "8140072"},
-                {"id": "8138254"}
+                {"id": "081b084e13fd0318c097", "user": {"id" : 765676}},
+                {"id": "8140072", "user": {"id" : 765676}},
+                {"id": "8138254", "user": {"id" : 765676}}
             ],
             privateGist = {
-                "files": {"fsdaffds": {"filename": "fsdaffds", "type": "text/plain", "language": null, "size": 31, "content": "Some interesting content maybe?"}
-                }, "description": "Private"
+                id: "081b084e13fd0318c097",
+                "files": {"file1": {"filename": "file1", "type": "text/plain", "language": null, "size": 31, "content": "Some interesting content maybe?"}
+                }, "description": "Private", "user": {"id" : 765676}
             },
-            publicGist_1 = {"files": {
+            publicGist_1 = {id: "8140072", "files": {
                 "readme.txt": {"filename": "readme.txt", "type": "text/plain", "language": null, "size": 20, "content": "Read me - \n\n\n\n\nagain"
                 },
                 "lorem.txt": {"filename": "lorem.txt", "type": "text/plain", "language": null, "size": 19, "content": "No more lorem ipsum"
@@ -28,12 +30,12 @@
                 },
                 "template.html": {"filename": "template.html", "type": "text/html", "language": "HTML", "size": 54, "content": "  <html>\n    <head></head>\n    <body></body>\n  </html>"
                 }
-            }, "description": "Some files ..."
+            }, "description": "Some files ...", "user": {"id" : 765676}
             },
-            publicGist_2 = {
+            publicGist_2 = {id: "8138254",
                 "files": {"module.js": {"filename": "module.js", "type": "application/javascript", "language": "JavaScript", "size": 94, "content": "(function(){\n  var f12 = function() {\n    //do stuff\n  }\n  return {\n    doStuff: f12\n  }\n})();"
                 }
-                }, "description": "First test gist"
+                }, "description": "First test gist", "user": {"id" : 765676}
             };
 
 
@@ -59,16 +61,18 @@
                 gists: {},
                 gistService: gService
             });
-            httpBackend.when('POST', 'https://api.github.com/user').respond(200, {"login": "username", "id": 2345678});
+            httpBackend.when('POST', 'https://api.github.com/user').respond(200, {"login": "username", "id": 765676});
             httpBackend.when('GET', '/users/username/gists').respond(gistIds);
             httpBackend.when('GET', '/gists/081b084e13fd0318c097').respond(privateGist);
             httpBackend.when('GET', '/gists/8140072').respond(publicGist_1);
             httpBackend.when('GET', '/gists/8138254').respond(publicGist_2);
-            httpBackend.when('GET', '/users/userTwo/gists').respond(gistIds = [{"id": "123456789"}]);
-            httpBackend.when('GET', '/gists/123456789').respond(publicGist_2 = {
+            httpBackend.when('GET', '/users/userTwo/gists').respond([
+                {"id": "123456789"}
+            ]);
+            httpBackend.when('GET', '/gists/123456789').respond(publicGist_2 = {id: "123456789",
                 "files": {"otherUser.js": {"filename": "otherUser.js", "type": "application/javascript", "language": "JavaScript", "size": 94, "content": "console.log('Hello other user');"
                 }
-                }, "description": "Other users gist"
+                }, "description": "Other users gist", "user": {"id" : 2345678}
             });
 
         }));
@@ -79,7 +83,7 @@
         });
 
         function fakeLogin() {
-            httpBackend.expectPOST('https://api.github.com/user').respond(200, {"login": "username", "id": 2345678});
+            httpBackend.expectPOST('https://api.github.com/user').respond(200, {"login": "username", "id": 765676});
             uService.login({id: 'username', sec: 'password'});
             httpBackend.flush();
         }
@@ -97,7 +101,7 @@
             httpBackend.expectGET('/gists/8138254');
         }
 
-        describe('get gist functions', function() {
+        describe('get gist functions', function () {
             it('can get gists from api', function () {
                 fakeLogin();
                 expectDefaultUserGets();
@@ -110,7 +114,7 @@
                 expect(scope.data.gists.length).toEqual(3);
             });
 
-            it('no call to api is made when data.username is not set', function(){
+            it('no call to api is made when data.username is not set', function () {
                 spyOn(gService, 'gists');
                 fakeLogin();
                 setOtherUsername(undefined);
@@ -121,20 +125,23 @@
             });
 
 
-            it('can get gist for a different user', function() {
+            it('can get gist for a different user', function () {
                 fakeLogin();
                 setOtherUsername('userTwo');
 
-                expect(scope.data.ownGists).toBeFalsy();
                 httpBackend.expectGET('/users/userTwo/gists');
                 httpBackend.expectGET('/gists/123456789');
                 scope.browse();
                 httpBackend.flush();
+                expect(scope.data.ownGists).toBeFalsy();
 
                 expect(scope.data.gists.length).toEqual(1);
             });
 
-            it('returns error when username is not matching github user', function(){
+            it('returns error when username is not matching github user', function () {
+
+
+
                 fakeLogin();
                 setOtherUsername('NotACorrectUsername');
                 httpBackend.expectGET('/users/NotACorrectUsername/gists').respond(401, {
@@ -149,40 +156,137 @@
             });
         });
 
+        describe('interactions with a gist', function () {
+            it('can NOT update other users gists', function () {
+                spyOn(gService, 'update');
+
+                fakeLogin();
+                setOtherUsername('userTwo');
+
+                httpBackend.expectGET('/users/userTwo/gists');
+                httpBackend.expectGET('/gists/123456789');
+                scope.browse();
+                httpBackend.flush();
+
+                scope.update(scope.data.gists[0]);
+                expect(gService.update).not.toHaveBeenCalled();
+            });
+
+            it('can update own gists', function () {
+                fakeLogin();
+                setOtherUsername('username');
+                expectDefaultUserGets();
+
+                scope.browse();
+                httpBackend.flush();
+
+                scope.data.gists[0].files['file1'].content = 'New content before update';
+
+                var transformedGist = gService.transformForUpdate(scope.data.gists[0]);
+
+                httpBackend.expectPATCH('/gists/' + scope.data.gists[0].id, transformedGist).respond(200, scope.data.gists[0]);
+
+                scope.update(scope.data.gists[0]);
+                httpBackend.flush();
+                expect(scope.data.gists[0].files['file1'].content).toEqual('New content before update');
+            });
+
+            it('can create a new gist', function () {
+                fakeLogin();
+
+                scope.$apply(function () {
+                    scope.data.gists = [];
+                    scope.data.newGist.description = "New Gist";
+                    scope.data.newGist.public = false;
+                    scope.data.newGist.filename = "newFile.js";
+                });
+
+                var gist = {
+                    description: "New Gist",
+                    public: false,
+                    files: {
+                        'newFile.js': {
+                            content: '//Default content'
+                        }
+                    }
+                };
+
+                var createdGist = {
+                    "url": "https://api.github.com/gists/123456789",
+                    "forks_url": "https://api.github.com/gists/123456789/forks",
+                    "commits_url": "https://api.github.com/gists/123456789/commits",
+                    "id": "1",
+                    "description": "description of gist",
+                    "public": true,
+                    "user": {
+                        "login": "username",
+                        "id": 109876543,
+                        "avatar_url": "https://github.com/images/error/username.gif",
+                        "gravatar_id": "somehexcode",
+                        "url": "https://api.github.com/users/username",
+                        "html_url": "https://github.com/username",
+                        "followers_url": "https://api.github.com/users/username/followers",
+                        "following_url": "https://api.github.com/users/username/following{/other_user}",
+                        "gists_url": "https://api.github.com/users/username/gists{/gist_id}",
+                        "starred_url": "https://api.github.com/users/username/starred{/owner}{/repo}",
+                        "subscriptions_url": "https://api.github.com/users/username/subscriptions",
+                        "organizations_url": "https://api.github.com/users/username/orgs",
+                        "repos_url": "https://api.github.com/users/username/repos",
+                        "events_url": "https://api.github.com/users/username/events{/privacy}",
+                        "received_events_url": "https://api.github.com/users/username/received_events",
+                        "type": "User",
+                        "site_admin": false
+                    },
+                    "files": {
+                        "size": 932,
+                        "filename": "newFile.js",
+                        "raw_url": "https://gist.github.com/raw/365370/8c4d2d43d178df44f4c03a7f2ac0ff512853564e/newFile.js",
+                        "type": "text/javascript",
+                        "language": "JavaScript",
+                        "content": "contents of gist"
+                    }
+                };
+
+                httpBackend.expect('POST', '/gists', gist).respond(201, createdGist);
+                scope.create();
+                httpBackend.flush();
+                expect(scope.data.newGist).toEqual({'public': true});
+                expect(scope.data.gists.length).toEqual(1);
+                expect(scope.data.gists[0].id).toEqual(createdGist.id);
+            });
+
+
+            it('can star a gist', function () {
+                fakeLogin();
+
+                httpBackend.expectPUT('/gists/8140072/star').respond(204);
+                scope.star(8140072);
+                httpBackend.flush();
+            });
+
+            it('can remove a star from a gist', function () {
+                fakeLogin();
+
+                httpBackend.expectDELETE('/gists/8140072/star').respond(204);
+                scope.unstar(8140072);
+                httpBackend.flush();
+            });
+        });
+
 
         //Should be moved to a different spec for gistService
         it('can transform a gist before update', function () {
             var expectedResult = {
                 description: privateGist.description,
-                files: {
-                    'fsdaffds': {
-                        'content': 'New content'
-                    }
-                }
+                files: {'file1': {'content': 'New content'}}
             };
 
-            privateGist.files['fsdaffds'].content = 'New content';
+            privateGist.files['file1'].content = 'New content';
             var result = gService.transformForUpdate(privateGist);
 
             expect(expectedResult).toEqual(result);
         });
 
-        it('can NOT update other users gists', function() {
-            spyOn(gService, 'update');
 
-            fakeLogin();
-            setOtherUsername('userTwo');
-
-            scope.update({});
-            expect(gService.update).not.toHaveBeenCalled();
-        });
-
-        it('can star a gist', function() {
-            fakeLogin();
-
-            httpBackend.expectPUT('/gists/8140072/star').respond(204);
-            scope.star(8140072);
-            httpBackend.flush();
-        });
     });
 })();

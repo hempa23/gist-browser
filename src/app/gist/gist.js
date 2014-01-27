@@ -6,12 +6,8 @@
             function (scope, userService, loc, gists, gistService, root) {
                 scope.data = {
                     username: root.username,
-                    ownGists: true
+                    newGist: {'public': true}
                 };
-
-                scope.$watch("data.username", function (newVal, oldVal) {
-                    scope.data.ownGists = (newVal === root.username);
-                });
 
                 scope.logout = function () {
                     if (userService.logout()) {
@@ -21,6 +17,7 @@
 
                 scope.browse = function () {
                     if (scope.data.username) {
+
                         gistService.gists(scope.data.username).then(
                             function (gists) {
                                 scope.data.gists = gists;
@@ -32,9 +29,10 @@
                 };
 
                 scope.update = function (gist) {
-                    if (scope.data.ownGists) {
-                        gistService.update(gist.id, gistService.transformForUpdate(gist))
-                            .then(
+                    if (angular.equals(gist.user.id, root.user.id) ) {
+                        var gistForUpdate = gistService.transformForUpdate(gist);
+
+                        gistService.update(gist.id, gistForUpdate).then(
                             function (d) {
                                 gist = d;
                             },
@@ -49,15 +47,40 @@
                     gistService.star(id).then(function (res) {
 
                     }, function (e) {
-                        
+
                     });
                 };
+
+                scope.unstar = function (id) {
+                    gistService.unstar(id);
+                };
+
+                scope.create = function () {
+                    var gist = angular.copy(scope.data.newGist);
+                    var correctFormat = {
+                        'description': gist.description,
+                        'files': {},
+                        'public': gist.public
+                    };
+
+                    correctFormat.files[gist.filename] = {
+                        'content': '//Created by ' + root.username
+                    };
+
+                    gistService.create(correctFormat).then(function (g) {
+                        scope.data.gists.push(g);
+                        scope.data.newGist = {'public': true};
+                    }, function (e) {
+                        scope.data.error = 'Could no save new gist' + e.data;
+                    });
+                };
+
 
                 scope.data.gists = gists;
             }])
         .factory('gistService', ['$http', '$q', '$rootScope', '$log', 'userService', 'Restangular',
             function (http, q, root, log, userService, Restangular) {
-                var userGists = function (username) {
+                var getUsersGists = function (username) {
                         var defer = q.defer();
 
                         Restangular.one('users', username).getList('gists', {}, userService.getAuthHeader())
@@ -72,7 +95,7 @@
 
                         return defer.promise;
                     },
-                    userGistsById = function (gists) {
+                    getGistById = function (gists) {
                         var defer = q.defer(),
                             gistsWithContent = [];
                         angular.forEach(gists, function (gist) {
@@ -88,27 +111,24 @@
                             );
                         });
 
+
                         defer.resolve(gistsWithContent);
                         return defer.promise;
                     },
                     errorHandler = function (err) {
                         return q.reject(err.data);
-                    };
-
-                return {
-                    gists: function (username) {
-                        return userGists(username).then(userGistsById, errorHandler);
                     },
-                    transformForUpdate: function (gist) {
+                    createFilesJSON = function (gist) {
                         var updatedFiles = {};
                         angular.forEach(gist.files, function (file) {
                             updatedFiles[file.filename] = {'content': file.content};
                         });
+                        return updatedFiles;
+                    };
 
-                        return {
-                            description: gist.description,
-                            files: updatedFiles
-                        };
+                return {
+                    gists: function (username) {
+                        return getUsersGists(username).then(getGistById, errorHandler);
                     },
                     update: function (id, updatedGist) {
                         var gist = Restangular.one('gists', id);
@@ -117,6 +137,25 @@
                     star: function (id) {
                         var gist = Restangular.one('gists', id).one('star');
                         return gist.put({}, userService.getAuthHeader());
+                    },
+                    unstar: function (id) {
+                        var gist = Restangular.one('gists', id).one('star');
+                        return gist.remove({}, userService.getAuthHeader());
+                    },
+                    create: function (gist) {
+                        return Restangular.all('gists').post(JSON.stringify(gist), {}, userService.getAuthHeader());
+                    },
+                    deleteGist: function (gist) {
+                        var gistRest = Restangular.one('gists', gist.id);
+                        return gistRest.remove(updatedGist, {}, userService.getAuthHeader());
+                    },
+                    transformForUpdate: function (gist) {
+                        var updatedFiles = createFilesJSON(gist);
+
+                        return {
+                            description: gist.description,
+                            files: updatedFiles
+                        };
                     }
                 };
             }])
@@ -194,5 +233,17 @@
                     });
                 }
             };
+        }])
+        .directive('createGist', [function () {
+            return {
+                replace: true,
+                restrict: 'E',
+                scope: {
+                    gist: '=',
+                    create: '&'
+                },
+                templateUrl: 'gist/create.tpl.html'
+            };
+
         }]);
 })(angular);

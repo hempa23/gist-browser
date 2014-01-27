@@ -1,10 +1,18 @@
 <div class="row">
+    {{data.gists.post}}
     <div class="col-sm-8 col-md-8 user-info">
-        <span class="pink upper">{{username}}</span>/
-        <span>{{fullname}}</span>/
-            <span>
-                <a href="" ng-click="logout()">Log out</a>
-            </span>
+        <div class="avatar pull-left">
+            <img class="img-responsive" ng-src="{{user.useravatar}}" alt="User avatar"/>
+        </div>
+        <div class="pull-left">
+            <ul>
+                <li class="pink upper">{{user.username}}</li>
+                <li>{{user.fullname}}</li>
+                <li>
+                    <a href="" ng-click="logout()">Log out</a>
+                </li>
+            </ul>
+        </div>
     </div>
     <div class="col-sm-4 col-md-4">
         <div class="input-group">
@@ -19,8 +27,12 @@
     <div class="alert alert-danger col-sm-12 col-md-12" ng-show="data.error" ng-bind="data.error"></div>
 </div>
 
+<div ng-show="username == data.username && data.gists.length == 0">
+    <create-gist gist="data.newGist" create="create()"></create-gist>
+</div>
+
 <div class="gist-wrapper col-sm-12 col-md-12" ng-repeat="gist in data.gists">
-    <h4>{{gist.description}} <button class="btn pink-button" ng-show="username != data.username" ng-click="star(gist.id)">Star!</button></h4>
+    <h4>{{gist.description}} <button class="btn pink-button" ng-show="user.id != gist.user.id" ng-click="star(gist.id)">Star!</button></h4>
     <gist id="gist.id" user="data.username">
         <div ng-repeat="f in gist.files">
             <gist-file-pane title="f.filename">

@@ -19,6 +19,8 @@ angular.module('hesa.user', []).
     }])
     .factory('userService', ['$http', '$q', '$location', '$log', '$rootScope', function (http, q, location, log, $root) {
         var authHeader;
+        $root.user = {};
+
         return {
             login: function (cred) {
                 var defer = q.defer(),
@@ -29,8 +31,11 @@ angular.module('hesa.user', []).
                     'Content-Type' : 'application/json;charset=UTF-8'
                 }})
                 .success(function(data){
-                    $root.username = data.login;
-                    $root.fullname = data.name;
+                    $root.user.username = data.login;
+                    $root.user.fullname = data.name;
+                    $root.user.useravatar = data.avatar_url;
+                    $root.user.id = data.id;
+
                     authHeader = {'Authorization' : loginHeader};
                     defer.resolve(true);
                 })

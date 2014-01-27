@@ -21,8 +21,8 @@
                     }
                 }, "description": "Some files ..."
             },
-            definedgists = [publicGist_1],
-            directive;
+            directive,
+            createDirective;
 
         beforeEach(module('hesa.user'));
         beforeEach(module('templates-app'));
@@ -31,7 +31,7 @@
 
         beforeEach(inject(function ($injector) {
             scope = $injector.get('$rootScope').$new();
-            location =  $injector.get('$location');
+            location = $injector.get('$location');
             uService = $injector.get('userService');
             httpBackend = $injector.get('$httpBackend');
             compile = $injector.get('$compile');
@@ -47,10 +47,11 @@
                     '</gist-file-pane>' +
                     '</div>' +
                     '</gist>';
+            createDirective = '<create-gist gist="data.newGist" create="create"></create-gist>';
 
         }));
 
-        it('gists a created and compiled correct', function () {
+        it('gists a displayed and compiled correct', function () {
 
             var elements = compile(directive)(scope);
             scope.$digest();
@@ -64,6 +65,20 @@
 
             var tabContent = e.find('.tab-pane');
             expect(4).toEqual(tabContent.length);
+        });
+
+        it('inputs and buttons are displayed', function () {
+            scope.gists = [];
+            scope.data = {newGist : {'public':true}};
+            scope.create = function() {console.log("Create"); };
+
+            var createElement = compile(createDirective)(scope);
+            scope.$digest();
+            var element = angular.element(createElement);
+
+            expect(element.find('button').length).toEqual(1);
+            expect(element.find(':checkbox:checked').length).toEqual(1);
+
         });
     });
 })();
