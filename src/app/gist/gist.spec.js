@@ -7,6 +7,7 @@
     describe('GistController', function () {
         var gistCtrl,
             scope,
+            rootScope,
             httpBackend,
             gService,
             uService,
@@ -39,15 +40,15 @@
             };
 
 
-        beforeEach(module('hesa.user'));
+        beforeEach(module('credModule'));
         beforeEach(angular.mock.module("restangular"));
-        beforeEach(angular.mock.module('hesa.gists'));
+        beforeEach(angular.mock.module('gistModule'));
 
         beforeEach(inject(function ($injector) {
             var $controller = $injector.get('$controller');
-            var $rootScope = $injector.get('$rootScope');
-            $rootScope.username = 'username';
-            scope = $rootScope.$new();
+            rootScope = $injector.get('$rootScope');
+
+            scope = rootScope.$new();
             location = $injector.get('$location');
             uService = $injector.get('userService');
             httpBackend = $injector.get('$httpBackend');
@@ -56,9 +57,10 @@
             scope.data = {};
             gistCtrl = $controller('gistCtrl', {
                 $scope: scope,
+                $rootScope: rootScope,
                 userService: uService,
                 $location: location,
-                gists: {},
+                gists: [],
                 gistService: gService
             });
             httpBackend.when('POST', 'https://api.github.com/user').respond(200, {"login": "username", "id": 765676});
@@ -74,7 +76,6 @@
                 }
                 }, "description": "Other users gist", "user": {"id" : 2345678}
             });
-
         }));
 
         afterEach(function () {
@@ -86,6 +87,7 @@
             httpBackend.expectPOST('https://api.github.com/user').respond(200, {"login": "username", "id": 765676});
             uService.login({id: 'username', sec: 'password'});
             httpBackend.flush();
+            setOtherUsername('username');
         }
 
         function setOtherUsername(name) {
@@ -99,14 +101,27 @@
             httpBackend.expectGET('/gists/081b084e13fd0318c097');
             httpBackend.expectGET('/gists/8140072');
             httpBackend.expectGET('/gists/8138254');
+
         }
 
-        describe('get gist functions', function () {
-            it('can get gists from api', function () {
+        describe('is setup with correct functions', function() {
+            it('has the correct setup', function() {
+               expect(scope.logout).toBeDefined();
+               expect(scope.create).toBeDefined();
+               expect(scope.star).toBeDefined();
+               expect(scope.unstar).toBeDefined();
+               expect(scope.deleteGist).toBeDefined();
+               expect(scope.browse).toBeDefined();
+               expect(scope.update).toBeDefined();
+            });
+        });
+
+        describe('fetch gists', function () {
+            it('can get user gists from api', function () {
                 fakeLogin();
                 expectDefaultUserGets();
 
-                expect(scope.data.gists).toEqual({});
+                expect(scope.data.gists).toEqual([]);
 
                 scope.browse();
                 httpBackend.flush();
@@ -124,7 +139,6 @@
                 expect(gService.gists).not.toHaveBeenCalled();
             });
 
-
             it('can get gist for a different user', function () {
                 fakeLogin();
                 setOtherUsername('userTwo');
@@ -139,9 +153,6 @@
             });
 
             it('returns error when username is not matching github user', function () {
-
-
-
                 fakeLogin();
                 setOtherUsername('NotACorrectUsername');
                 httpBackend.expectGET('/users/NotACorrectUsername/gists').respond(401, {
@@ -206,7 +217,7 @@
                     public: false,
                     files: {
                         'newFile.js': {
-                            content: '//Default content'
+                            content: '//Created by username'
                         }
                     }
                 };
@@ -271,10 +282,45 @@
                 scope.unstar(8140072);
                 httpBackend.flush();
             });
+
+            it('should remove gist from array when deleted', function() {
+                fakeLogin();
+                expectDefaultUserGets();
+
+                scope.browse();
+                httpBackend.flush();
+                httpBackend.expectDELETE('/gists/8140072').respond(204);
+                expect(scope.data.gists.length).toBe(3);
+
+                scope.deleteGist(scope.data.gists[1].id);
+                httpBackend.flush();
+
+                expect(scope.data.gists.length).toBe(2);
+                expect(scope.data.gists[0].id).not.toBe('8140072');
+                expect(scope.data.gists[1].id).not.toBe('8140072');
+            });
+
+            it('should not remove gist from array when tried to delete, with error response', function() {
+                fakeLogin();
+                expectDefaultUserGets();
+
+                scope.browse();
+                httpBackend.flush();
+                httpBackend.expectDELETE('/gists/8140072').respond(403);
+                expect(scope.data.gists.length).toBe(3);
+
+                scope.deleteGist(scope.data.gists[1].id);
+                httpBackend.flush();
+
+                expect(scope.data.gists.length).toBe(3);
+                expect(scope.data.gists[1].id).toBe('8140072');
+
+                expect(scope.data.error).toBe('Could not delete gist');
+            });
         });
 
 
-        //Should be moved to a different spec for gistService
+        //TODO: Should be moved to a different spec for gistService
         it('can transform a gist before update', function () {
             var expectedResult = {
                 description: privateGist.description,
@@ -286,7 +332,5 @@
 
             expect(expectedResult).toEqual(result);
         });
-
-
     });
 })();

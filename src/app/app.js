@@ -1,9 +1,27 @@
 /*global angular:false */
-(function(angular) {
+(function (angular) {
     "use strict";
-    angular.module('gist', ['ngRoute', 'hesa.user', 'hesa.gists', 'restangular', 'templates-app'])
-        .config(['$routeProvider', '$httpProvider', 'RestangularProvider', function ($route, httpProvider, RestangularProvider) {
-            $route
+    angular.module('gist', ['ngRoute', 'ngAnimate', 'credModule', 'gistModule', 'restangular', 'templates-app'])
+        .filter('notEmpty', function () {
+            return function (input) {
+                return (input === undefined || input === null || input.length === 0) ? 'No value' : input;
+            };
+        })
+        .factory('authInterceptor', function ($q, $rootScope) {
+
+            return {
+                'request': function (config) {
+                    if (!config.headers['Authorization']) {
+                        config.headers['Authorization'] = $rootScope.auth;
+                    }
+
+                    return config || $q.when(config);
+                }
+            };
+        })
+        .config(
+        function ($routeProvider, $httpProvider, RestangularProvider) {
+            $routeProvider
                 .when('/', {
                     templateUrl: 'login/login.tpl.html',
                     controller: 'loginCtrl'
@@ -12,20 +30,23 @@
                     templateUrl: 'gist/edit.tpl.html',
                     controller: 'gistCtrl',
                     resolve: {
-                        gists: ['gistService', 'userService', '$location', '$rootScope', function (gistService, userService, location, root) {
+                        gists: function (gistService, userService, $location, $rootScope) {
                             if (userService.userLoggedIn()) {
-                                return gistService.gists(root.user.username).then(function (gists) {
+                                return gistService.gists($rootScope.user.username).then(function (gists) {
                                     return gists;
                                 });
                             } else {
-                                location.path('/login');
+                                $location.path('/login');
                             }
-                        }]}})
+                        }}})
                 .otherwise({
                     redirectTo: '/'
                 });
 
-            RestangularProvider.setBaseUrl('https://api.github.com/');
+            $httpProvider.interceptors.push('authInterceptor');
 
-        }]);
+            RestangularProvider.setBaseUrl('https://api.github.com/');
+        });
+
+
 })(angular);

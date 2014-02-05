@@ -1,4 +1,4 @@
-module.exports = function ( grunt ) {
+module.exports = function (grunt) {
 
     /**
      * Load required Grunt tasks. These are installed based on the versions listed
@@ -10,10 +10,8 @@ module.exports = function ( grunt ) {
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-coffee');
     grunt.loadNpmTasks('grunt-conventional-changelog');
     grunt.loadNpmTasks('grunt-bump');
-    grunt.loadNpmTasks('grunt-coffeelint');
     grunt.loadNpmTasks('grunt-recess');
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('grunt-ngmin');
@@ -22,7 +20,7 @@ module.exports = function ( grunt ) {
     /**
      * Load in our build configuration file.
      */
-    var userConfig = require( './build.config.js' );
+    var userConfig = require('./build.config.js');
 
     /**
      * This is the configuration object Grunt uses to give each plugin its
@@ -40,16 +38,15 @@ module.exports = function ( grunt ) {
          * source files. It is first processed as a Grunt template, where the `<%=`
          * pairs are evaluated based on this very configuration object.
          */
-//        meta: {
-//            banner:
-//                '/**\n' +
-//                    ' * <%= pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n' +
-//                    ' * <%= pkg.homepage %>\n' +
-//                    ' *\n' +
-//                    ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' +
-//                    ' * Licensed <%= pkg.licenses.type %> <<%= pkg.licenses.url %>>\n' +
-//                    ' */\n'
-//        },
+        meta: {
+            banner: '/**\n' +
+                ' * <%= pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %>\n' +
+                ' * <%= pkg.homepage %>\n' +
+                ' *\n' +
+                ' * Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' +
+                ' * Licensed <%= pkg.licenses.type %> <<%= pkg.licenses.url %>>\n' +
+                ' */\n'
+        },
 
         /**
          * Creates a changelog on a new version.
@@ -172,7 +169,7 @@ module.exports = function ( grunt ) {
              */
             compile_js: {
                 options: {
-//                    banner: '<%= meta.banner %>'
+                    banner: '<%= meta.banner %>'
                 },
                 src: [
                     '<%= vendor_files.js %>',
@@ -183,26 +180,6 @@ module.exports = function ( grunt ) {
                     'module.suffix'
                 ],
                 dest: '<%= compile_dir %>/assets/<%= pkg.name %>-<%= pkg.version %>.js'
-            }
-        },
-
-        /**
-         * `grunt coffee` compiles the CoffeeScript sources. To work well with the
-         * rest of the build, we have a separate compilation task for sources and
-         * specs so they can go to different places. For example, we need the
-         * sources to live with the rest of the copied JavaScript so we can include
-         * it in the final build, but we don't want to include our specs there.
-         */
-        coffee: {
-            source: {
-                options: {
-                    bare: true
-                },
-                expand: true,
-                cwd: '.',
-                src: [ '<%= app_files.coffee %>' ],
-                dest: '<%= build_dir %>',
-                ext: '.js'
             }
         },
 
@@ -229,7 +206,7 @@ module.exports = function ( grunt ) {
         uglify: {
             compile: {
                 options: {
-//                    banner: '<%= meta.banner %>'
+                    banner: '<%= meta.banner %>'
                 },
                 files: {
                     '<%= concat.compile_js.dest %>': '<%= concat.compile_js.dest %>'
@@ -298,24 +275,6 @@ module.exports = function ( grunt ) {
         },
 
         /**
-         * `coffeelint` does the same as `jshint`, but for CoffeeScript.
-         * CoffeeScript is not the default in ngBoilerplate, so we're just using
-         * the defaults here.
-         */
-        coffeelint: {
-            src: {
-                files: {
-                    src: [ '<%= app_files.coffee %>' ]
-                }
-            },
-            test: {
-                files: {
-                    src: [ '<%= app_files.coffeeunit %>' ]
-                }
-            }
-        },
-
-        /**
          * HTML2JS is a Grunt plugin that takes all of your template files and
          * places them into JavaScript files as strings that are added to
          * AngularJS's template cache. This means that the templates too become
@@ -353,14 +312,14 @@ module.exports = function ( grunt ) {
                 configFile: '<%= build_dir %>/karma-unit.js'
             },
             unit: {
-                runnerPort: 9101,
-                background: true
+                background: true,
+                port: 9877
             },
             continuous: {
+                background: false,
                 singleRun: true
             }
         },
-
         /**
          * The `index` task compiles the `index.html` file as a Grunt template. CSS
          * and JS files co-exist here but they get split apart later.
@@ -461,17 +420,6 @@ module.exports = function ( grunt ) {
             },
 
             /**
-             * When our CoffeeScript source files change, we want to run lint them and
-             * run our unit tests.
-             */
-            coffeesrc: {
-                files: [
-                    '<%= app_files.coffee %>'
-                ],
-                tasks: [ 'coffeelint:src', 'coffee:source', 'karma:unit:run', 'copy:build_appjs' ]
-            },
-
-            /**
              * When assets are changed, copy them. Note that this will *not* copy new
              * files, so this is probably not very useful.
              */
@@ -495,8 +443,8 @@ module.exports = function ( grunt ) {
              */
             tpls: {
                 files: [
-                    '<%= app_files.atpl %>',
-                    '<%= app_files.ctpl %>'
+                    '<%= app_files.atpl %>'
+//                    '<%= app_files.ctpl %>'
                 ],
                 tasks: [ 'html2js' ]
             },
@@ -521,25 +469,11 @@ module.exports = function ( grunt ) {
                 options: {
                     livereload: false
                 }
-            },
-
-            /**
-             * When a CoffeeScript unit test file changes, we only want to lint it and
-             * run the unit tests. We don't want to do any live reloading.
-             */
-            coffeeunit: {
-                files: [
-                    '<%= app_files.coffeeunit %>'
-                ],
-                tasks: [ 'coffeelint:test', 'karma:unit:run' ],
-                options: {
-                    livereload: false
-                }
             }
         }
     };
 
-    grunt.initConfig( grunt.util._.extend( taskConfig, userConfig ) );
+    grunt.initConfig(grunt.util._.extend(taskConfig, userConfig));
 
     /**
      * In order to make it safe to just compile or copy *only* what was changed,
@@ -548,23 +482,22 @@ module.exports = function ( grunt ) {
      * `delta`) and then add a new task called `watch` that does a clean build
      * before watching for changes.
      */
-    grunt.renameTask( 'watch', 'delta' );
-    grunt.registerTask( 'watch', [ 'build', 'karma:unit', 'delta' ] );
+    grunt.renameTask('watch', 'delta');
+    grunt.registerTask('watch', [ 'build', 'karma:unit', 'delta' ]);
 
     /**
      * The default task is to build and compile.
      */
-    grunt.registerTask( 'default', [ 'build', 'recess', 'compile' ] );
+    grunt.registerTask('default', [ 'build', 'compile' ]);
 
     /**
      * The `build` task gets your app ready to run for development and testing.
      */
-    grunt.registerTask( 'build', [
-        'clean', 'html2js', 'jshint', 'coffeelint', 'coffee',
-        //'recess:build',
+    grunt.registerTask('build', [
+        'clean', 'html2js', 'jshint', 'recess:build',
         'concat:build_css', 'copy:build_app_assets', 'copy:build_vendor_assets',
-        'copy:build_appjs', 'copy:build_vendorjs', 'index:build', 'karmaconfig',
-        'karma:continuous'
+        'copy:build_appjs', 'copy:build_vendorjs', 'index:build', 'karmaconfig'
+//        ,'karma:continuous'
     ]);
 
     /**
@@ -578,18 +511,18 @@ module.exports = function ( grunt ) {
     /**
      * A utility function to get all app JavaScript sources.
      */
-    function filterForJS ( files ) {
-        return files.filter( function ( file ) {
-            return file.match( /\.js$/ );
+    function filterForJS(files) {
+        return files.filter(function (file) {
+            return file.match(/\.js$/);
         });
     }
 
     /**
      * A utility function to get all app CSS sources.
      */
-    function filterForCSS ( files ) {
-        return files.filter( function ( file ) {
-            return file.match( /\.css$/ );
+    function filterForCSS(files) {
+        return files.filter(function (file) {
+            return file.match(/\.css$/);
         });
     }
 
@@ -599,22 +532,22 @@ module.exports = function ( grunt ) {
      * the list into variables for the template to use and then runs the
      * compilation.
      */
-    grunt.registerMultiTask( 'index', 'Process index.html template', function () {
-        var dirRE = new RegExp( '^('+grunt.config('build_dir')+'|'+grunt.config('compile_dir')+')\/', 'g' );
-        var jsFiles = filterForJS( this.filesSrc ).map( function ( file ) {
-            return file.replace( dirRE, '' );
+    grunt.registerMultiTask('index', 'Process index.html template', function () {
+        var dirRE = new RegExp('^(' + grunt.config('build_dir') + '|' + grunt.config('compile_dir') + ')\/', 'g');
+        var jsFiles = filterForJS(this.filesSrc).map(function (file) {
+            return file.replace(dirRE, '');
         });
-        var cssFiles = filterForCSS( this.filesSrc ).map( function ( file ) {
-            return file.replace( dirRE, '' );
+        var cssFiles = filterForCSS(this.filesSrc).map(function (file) {
+            return file.replace(dirRE, '');
         });
 
         grunt.file.copy('src/index.html', this.data.dir + '/index.html', {
-            process: function ( contents, path ) {
-                return grunt.template.process( contents, {
+            process: function (contents, path) {
+                return grunt.template.process(contents, {
                     data: {
                         scripts: jsFiles,
                         styles: cssFiles,
-                        version: grunt.config( 'pkg.version' )
+                        version: grunt.config('pkg.version')
                     }
                 });
             }
@@ -626,12 +559,12 @@ module.exports = function ( grunt ) {
      * run, we use grunt to manage the list for us. The `karma/*` files are
      * compiled as grunt templates for use by Karma. Yay!
      */
-    grunt.registerMultiTask( 'karmaconfig', 'Process karma config templates', function () {
-        var jsFiles = filterForJS( this.filesSrc );
+    grunt.registerMultiTask('karmaconfig', 'Process karma config templates', function () {
+        var jsFiles = filterForJS(this.filesSrc);
 
-        grunt.file.copy( 'karma/karma-unit.tpl.js', grunt.config( 'build_dir' ) + '/karma-unit.js', {
-            process: function ( contents, path ) {
-                return grunt.template.process( contents, {
+        grunt.file.copy('karma/karma-unit.tpl.js', grunt.config('build_dir') + '/karma-unit.js', {
+            process: function (contents, path) {
+                return grunt.template.process(contents, {
                     data: {
                         scripts: jsFiles
                     }

@@ -12,7 +12,7 @@
             unsuccessCredentials,
             authHeader;
 
-        beforeEach(module('hesa.user'));
+        beforeEach(module('credModule'));
 
         beforeEach(inject(function ($injector) {
 

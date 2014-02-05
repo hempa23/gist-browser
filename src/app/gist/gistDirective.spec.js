@@ -10,6 +10,7 @@
             location,
             compile,
             publicGist_1 = {
+                id: 1234,
                 "files": {
                     "readme.txt": {"filename": "readme.txt", "type": "text/plain", "language": null, "size": 20, "content": "Read me - \n\n\n\n\nagain"
                     },
@@ -24,10 +25,10 @@
             directive,
             createDirective;
 
-        beforeEach(module('hesa.user'));
+        beforeEach(module('credModule'));
         beforeEach(module('templates-app'));
         beforeEach(angular.mock.module("restangular"));
-        beforeEach(angular.mock.module('hesa.gists'));
+        beforeEach(angular.mock.module('gistModule'));
 
         beforeEach(inject(function ($injector) {
             scope = $injector.get('$rootScope').$new();
@@ -38,16 +39,16 @@
 
             gService = $injector.get('gistService');
             scope.gist = publicGist_1;
-            scope.username = 'username';
+            scope.data = {username :'username'};
             directive =
-                '<gist id="gist.id" user="username" >' +
-                    '<div ng-repeat="f in gist.files">' +
-                    '<gist-file-pane title="f.filename">' +
-                    '<textarea class="editor" gist-content="" ng-model="f.content" ng-blur="update(gist)"></textarea>' +
-                    '</gist-file-pane>' +
-                    '</div>' +
-                    '</gist>';
-            createDirective = '<create-gist gist="data.newGist" create="create"></create-gist>';
+                '<hs-gist id="gist.id" user="data.username" >' +
+                '<div ng-repeat="f in gist.files">' +
+                '<hs-gist-file-pane title="f.filename">' +
+                '<textarea class="editor" hs-gist-content="f.content" ng-model="f.content" ng-blur="update(gist)"></textarea>' +
+                '</hs-gist-file-pane>' +
+                '</div>' +
+                '</hs-gist>';
+            createDirective = '<hs-create-gist gist="data.newGist" create="create()"></hs-create-gist>';
 
         }));
 
@@ -55,16 +56,19 @@
 
             var elements = compile(directive)(scope);
             scope.$digest();
-            var e = angular.element(elements);
+            var fetchedElement = angular.element(elements);
 
-            var panes = e.find('li:not(.git-link)');
+            var panes = fetchedElement.find('li:not(.git-link)');
             expect(4).toEqual(panes.length);
 
             var text = angular.element(panes[0]).text().trim();
             expect('lorem.txt').toEqual(text);
 
-            var tabContent = e.find('.tab-pane');
+            var tabContent = fetchedElement.find('.tab-pane');
             expect(4).toEqual(tabContent.length);
+
+            var gitlink = fetchedElement.find('.git-link > a');
+            expect('https://gist.github.com/' + scope.data.username + '/' + scope.gist.id).toEqual(gitlink.attr('href'));
         });
 
         it('inputs and buttons are displayed', function () {
@@ -76,9 +80,9 @@
             scope.$digest();
             var element = angular.element(createElement);
 
-            expect(element.find('button').length).toEqual(1);
-            expect(element.find(':checkbox:checked').length).toEqual(1);
 
+            expect(element.find('button').length).toEqual(2);
+            expect(element.find(':checkbox:checked').length).toEqual(1);
         });
     });
 })();

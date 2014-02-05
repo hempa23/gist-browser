@@ -1,61 +1,58 @@
 /*global angular:false */
-(function(angular) {
+(function (angular) {
     "use strict";
-angular.module('hesa.user', []).
-    controller('loginCtrl', ['$scope', 'userService', '$location', function (scope, userService, location) {
-        scope.credentials = {};
+    angular.module('credModule', []).
+        controller('loginCtrl', function ($scope, $location, userService) {
+            $scope.credentials = {};
 
-        scope.auth = function() {
-            scope.error = undefined;
+            $scope.auth = function () {
+                $scope.error = undefined;
 
-            userService.login(scope.credentials).then(function(res) {
-                if(res) {
-                    location.path("/gists");
-                } else {
-                    scope.error = "Wrong username and/or password";
-                }
-            });
-        };
-    }])
-    .factory('userService', ['$http', '$q', '$location', '$log', '$rootScope', function (http, q, location, log, $root) {
-        var authHeader;
-        $root.user = {};
+                userService.login($scope.credentials).then(function (res) {
+                    if (res) {
+                        $location.path("/gists");
+                    } else {
+                        $scope.error = "Wrong username and/or password";
+                    }
+                });
+            };
+        })
+        .factory('userService', function ($http, $q, $location, $rootScope) {
+            $rootScope.user = {};
 
-        return {
-            login: function (cred) {
-                var defer = q.defer(),
-                    loginHeader = 'Basic ' + btoa(cred.id + ':' + cred.sec); //Encode
+            return {
+                login: function (cred) {
+                    var defer = $q.defer(),
+                        loginHeader = 'Basic ' + btoa(cred.id + ':' + cred.sec); //Encode
 
-                http({method: 'POST', url: 'https://api.github.com/user', data: {}, headers : {
-                    'Authorization' : loginHeader,
-                    'Content-Type' : 'application/json;charset=UTF-8'
-                }})
-                .success(function(data){
-                    $root.user.username = data.login;
-                    $root.user.fullname = data.name;
-                    $root.user.useravatar = data.avatar_url;
-                    $root.user.id = data.id;
+                    $http({method: 'POST', url: 'https://api.github.com/user', data: {}, headers: {
+                        'Authorization': loginHeader,
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    }})
+                        .success(function (data) {
+                            $rootScope.user.username = data.login;
+                            $rootScope.user.fullname = data.name;
+                            $rootScope.user.useravatar = data.avatar_url;
+                            $rootScope.user.id = data.id;
 
-                    authHeader = {'Authorization' : loginHeader};
+                    $rootScope.auth = loginHeader;
+
                     defer.resolve(true);
                 })
                 .error(function(error){
                     defer.resolve(false);
                 });
 
-                return defer.promise;
-            },
-            logout: function() {
-                $root.username = undefined;
-                authHeader = undefined;
-                return true;
-            },
-            userLoggedIn: function() {
-                return authHeader !== undefined;
-            },
-            getAuthHeader: function () {
-                return authHeader;
-            }
-        };
-    }]);
+                    return defer.promise;
+                },
+                logout: function () {
+                    $rootScope.username = undefined;
+                    $rootScope.auth = undefined;
+                    return true;
+                },
+                userLoggedIn: function () {
+                    return authHeader !== undefined;
+                }
+            };
+        });
 })(angular);

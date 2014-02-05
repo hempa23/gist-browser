@@ -1,5 +1,4 @@
 <div class="row">
-    {{data.gists.post}}
     <div class="col-sm-8 col-md-8 user-info">
         <div class="avatar pull-left">
             <img class="img-responsive" ng-src="{{user.useravatar}}" alt="User avatar"/>
@@ -11,6 +10,11 @@
                 <li>
                     <a href="" ng-click="logout()">Log out</a>
                 </li>
+                <li ng-show="user.username == data.username">
+                    <a href="" ng-click="data.addGist = true">New gist</a>
+                </li>
+                <hs-create-gist gist="data.newGist" create="create()" cancel-new="cancelNew()"
+                            display="data.addGist"></hs-create-gist>
             </ul>
         </div>
     </div>
@@ -27,17 +31,25 @@
     <div class="alert alert-danger col-sm-12 col-md-12" ng-show="data.error" ng-bind="data.error"></div>
 </div>
 
-<div ng-show="username == data.username && data.gists.length == 0">
-    <create-gist gist="data.newGist" create="create()"></create-gist>
-</div>
 
 <div class="gist-wrapper col-sm-12 col-md-12" ng-repeat="gist in data.gists">
-    <h4>{{gist.description}} <button class="btn pink-button" ng-show="user.id != gist.user.id" ng-click="star(gist.id)">Star!</button></h4>
-    <gist id="gist.id" user="data.username">
-        <div ng-repeat="f in gist.files">
-            <gist-file-pane title="f.filename">
-                <textarea class="editor" gist-content="" ng-model="f.content" ng-blur="update(gist)"></textarea>
-            </gist-file-pane>
+    <h4>{{gist.description | notEmpty}}
+        <div class="pull-right" style="display: inline-block">
+            <i class="fa fa-star action pink" ng-show="user.id != gist.user.id" ng-click="star(gist.id)"
+               title="Star gist"></i>
+            <i class="fa fa-plus-circle action pink" ng-show="user.id == gist.user.id" title="Add file" ng-click="gist.addFile = true"></i>
+            <i class="fa fa-trash-o action pink" ng-show="user.id == gist.user.id" ng-click="deleteGist(gist.id)"
+               title="Delete gist"></i>
+            <hs-add-file gist="gist" update="update(gist)"></hs-add-file>
         </div>
-    </gist>
+
+    </h4>
+    <hs-gist id="gist.id" user="data.username">
+        <div ng-repeat="f in gist.files">
+
+            <hs-gist-file-pane title="f.filename">
+                <textarea class="editor" hs-gist-content="" ng-model="f.content" ng-blur="update(gist)"></textarea>
+            </hs-gist-file-pane>
+        </div>
+    </hs-gist>
 </div>
