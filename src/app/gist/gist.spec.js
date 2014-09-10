@@ -13,16 +13,16 @@
             uService,
             location,
             gistIds = [
-                {"id": "081b084e13fd0318c097", "user": {"id" : 765676}},
-                {"id": "8140072", "user": {"id" : 765676}},
-                {"id": "8138254", "user": {"id" : 765676}}
+                {"id": "081b084e13fd0318c097", "owner": {"id" : 765676}},
+                {"id": "8140072", "owner": {"id" : 765676}},
+                {"id": "8138254", "owner": {"id" : 765676}}
             ],
             privateGist = {
-                id: "081b084e13fd0318c097",
+                id: "081b084e13fd0318c097", "owner": {"id" : 765676},
                 "files": {"file1": {"filename": "file1", "type": "text/plain", "language": null, "size": 31, "content": "Some interesting content maybe?"}
                 }, "description": "Private", "user": {"id" : 765676}
             },
-            publicGist_1 = {id: "8140072", "files": {
+            publicGist_1 = {id: "8140072", "owner": {"id" : 765676}, "files": {
                 "readme.txt": {"filename": "readme.txt", "type": "text/plain", "language": null, "size": 20, "content": "Read me - \n\n\n\n\nagain"
                 },
                 "lorem.txt": {"filename": "lorem.txt", "type": "text/plain", "language": null, "size": 19, "content": "No more lorem ipsum"
@@ -33,7 +33,7 @@
                 }
             }, "description": "Some files ...", "user": {"id" : 765676}
             },
-            publicGist_2 = {id: "8138254",
+            publicGist_2 = {id: "8138254", "owner": {"id" : 765676},
                 "files": {"module.js": {"filename": "module.js", "type": "application/javascript", "language": "JavaScript", "size": 94, "content": "(function(){\n  var f12 = function() {\n    //do stuff\n  }\n  return {\n    doStuff: f12\n  }\n})();"
                 }
                 }, "description": "First test gist", "user": {"id" : 765676}
@@ -71,7 +71,7 @@
             httpBackend.when('GET', '/users/userTwo/gists').respond([
                 {"id": "123456789"}
             ]);
-            httpBackend.when('GET', '/gists/123456789').respond(publicGist_2 = {id: "123456789",
+            httpBackend.when('GET', '/gists/123456789').respond(publicGist_2 = {id: "123456789", owner: "765676",
                 "files": {"otherUser.js": {"filename": "otherUser.js", "type": "application/javascript", "language": "JavaScript", "size": 94, "content": "console.log('Hello other user');"
                 }
                 }, "description": "Other users gist", "user": {"id" : 2345678}
@@ -320,7 +320,7 @@
         });
 
 
-        //TODO: Should be moved to a different spec for gistService
+
         it('can transform a gist before update', function () {
             var expectedResult = {
                 description: privateGist.description,

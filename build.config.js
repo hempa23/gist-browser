@@ -1,13 +1,10 @@
 module.exports = {
     build_dir: 'build',
-    compile_dir: 'bin',
+    compile_dir: 'dist',
 
     app_files: {
         js: [ 'src/**/*.js', '!src/**/*.spec.js', '!src/assets/**/*.js' ],
         jsunit: [ 'src/**/*.spec.js' ],
-
-//        coffee: [ 'src/**/*.coffee', '!src/**/*.spec.coffee' ],
-//        coffeeunit: [ 'src/**/*.spec.coffee' ],
 
         atpl: [ 'src/app/**/*.tpl.html' ],
 //        ctpl: [ 'src/common/**/*.tpl.html' ],
@@ -25,7 +22,7 @@ module.exports = {
     vendor_files: {
         js: [
             'vendor/jquery/jquery.min.js',
-            'vendor/angular/angular.min.js',
+            'vendor/angular/angular.js',
             'vendor/angular-route/angular-route.min.js',
             'vendor/angular-animate/angular-animate.min.js',
             'vendor/bootstrap/dist/js/bootstrap.min.js',

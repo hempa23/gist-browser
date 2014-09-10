@@ -51,7 +51,7 @@
                     return true;
                 },
                 userLoggedIn: function () {
-                    return authHeader !== undefined;
+                    return $rootScope.auth !== undefined;
                 }
             };
         });

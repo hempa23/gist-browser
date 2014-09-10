@@ -14,7 +14,7 @@ module.exports = function ( karma ) {
     'src/assets/**/*.js'
   ],
   frameworks: [ 'jasmine' ],
-  plugins: [ 'karma-jasmine', 'karma-firefox-launcher', 'karma-chrome-launcher', 'karma-phantomjs-launcher', 'karma-coffee-preprocessor' ],
+  plugins: [ 'karma-jasmine', 'karma-firefox-launcher', 'karma-chrome-launcher', 'karma-phantomjs-launcher' ],
 
   /**
    * How to report, by default.

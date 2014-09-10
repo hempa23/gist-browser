@@ -30,7 +30,7 @@
             };
 
             $scope.update = function (gist) {
-                if (angular.equals(gist.user.id, $rootScope.user.id)) {
+                if (angular.equals(gist.owner.id, $rootScope.user.id)) {
                     var gistForUpdate = gistService.transformForUpdate(gist);
 
                     gistService.update(gist.id, gistForUpdate).then(

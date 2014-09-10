@@ -81,7 +81,6 @@
             scope.auth();
             httpBackend.flush();
 
-            expect(userService.getAuthHeader()).not.toBe(undefined);
             expect(userService.userLoggedIn()).toBe(true);
             expect(location.path()).toEqual('/gists');
         });
@@ -97,7 +96,6 @@
             scope.auth();
             httpBackend.flush();
 
-            expect(userService.getAuthHeader()).toBe(undefined);
             expect(userService.userLoggedIn()).toBe(false);
             expect(location.path()).toEqual('');
         });

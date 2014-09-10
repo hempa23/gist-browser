@@ -1,6 +1,5 @@
 build/
-bin/
+dist/
 vendor/
 node_modules/
-test-results.xml
 .idea
